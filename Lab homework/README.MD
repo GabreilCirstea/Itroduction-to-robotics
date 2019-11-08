@@ -1,2 +1,6 @@
 #GABRIEL CÎRSTEA
-#group 212
+
+Homeworks record.
+
+Homework 1:
+	Control an RGB LED with 3 potentiometers.
