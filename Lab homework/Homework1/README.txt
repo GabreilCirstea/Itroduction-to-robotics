@@ -1,1 +1,0 @@
-Control an RGB LED with 3 potentiometers.
