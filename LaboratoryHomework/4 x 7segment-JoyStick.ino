@@ -77,7 +77,7 @@ void showNumbers(){
   for(int i = 0; i <noOfDisplays;i++){
     delay(5);
     showDigit(i);
-    if( positionSet && i == currentPosition)
+    if(i == currentPosition)
       dpState = HIGH;
     else
       dpState = LOW;
