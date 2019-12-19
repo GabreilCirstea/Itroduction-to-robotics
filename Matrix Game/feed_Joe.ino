@@ -133,7 +133,6 @@ void movement(){
   {
     if (movedY == false)
     {
-      //posY--;
       changeY = -1;
       movedY = true;
     }
@@ -144,7 +143,6 @@ void movement(){
     {
       if (movedY == false)
       {
-        //posY++;
         changeY = 1;
         movedY = true;
       }
@@ -156,7 +154,6 @@ void movement(){
   {
     if (movedX == false)
     {
-      //posX--;
       changeX = -1;
       movedX = true;
     }
@@ -167,7 +164,6 @@ void movement(){
     {
       if (movedX == false)
       {
-        //posX++;
         changeX = 1;
         movedX = true;
       }
@@ -210,7 +206,6 @@ void printMap(){
   for(int i=1;i<9;i++){
      lc.setRow(0, i-1, Map[i]);
   }
-  //showFood();
 }
 
 void hunger(){
@@ -299,7 +294,6 @@ void fallIng(){
 }
 
 void colision(){
-  //ce crezi? nu merge collisionul.
   if(Map[posY+1] & 1<<(7-posX)){
       lives--;
       if(lives<1){
@@ -343,8 +337,6 @@ void pauseGame(){
 void feed_Joe(){
   if(!Pause && checkButton())
     Pause = true;
-  //if(pause)
-    //return;
   if(!MapPrinted){
     printMap();
     MapPrinted = 1;
@@ -379,8 +371,5 @@ void feed_Joe(){
 void runMenu();
 
 void loop() {
-  // put your main code here, to run repeatedly:
   runMenu();
-  
-  //Serial.println(1<<(posX+1));
 }

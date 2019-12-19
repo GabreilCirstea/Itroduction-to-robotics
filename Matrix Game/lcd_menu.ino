@@ -11,15 +11,7 @@ const int RS = 7,
 LiquidCrystal lcd(RS,E,D4,D5,D6,D7); //pins
 
 //JoyStick
-//const int VRx = A1,
-//          VRy = A0,
-//          button = A2;
-//bool joyMoved = false;
-//int minThreashold = 400, maxThreashold = 550;
-//// if in min - maxThreashold joyMoved = false;
-//int buttonState = 1;
-//unsigned long int prevPressTime = 0, //for the joystick button
-//              pressInterval = 100;
+
 #define joyMoved movedY
 extern const int VRx, VRy, buttonPin;
 extern bool movedY;
@@ -42,7 +34,6 @@ char lcdLedState = HIGH;    /* the lcd led */
 
 //for menu
 const int noOfMainRows = 4;
-//int topMainRow = 0;   //the index for the row on the lcd main menu
 char mainMenuRows[noOfMainRows][16]={
   "Start Game",
   "Score",
@@ -50,7 +41,6 @@ char mainMenuRows[noOfMainRows][16]={
   "Info"
 };
 
-//int subMenuRow = 0;     //for submenu rows like info
 const int noOfInfo = 4;
 char infoRows[noOfInfo][16]={
   "Feed Joe",
@@ -76,7 +66,6 @@ struct CurrentMenu{
 CurrentMenu *mainMenu, *infoMenu, *settingsMenu;
 
 void initietMenus(){
-  //o metoda nu prea ortodoxa
   mainMenu = new CurrentMenu;
   mainMenu->topRow = 0;
   mainMenu->noOfRows = 4;
@@ -148,7 +137,7 @@ void setupLcd() {
   pinMode(LCDLed,OUTPUT);
   Serial.begin(9600);
   digitalWrite(LCDLed,lcdLedState);
-  //analogWrite(VO,200);
+
   analogWrite(VO,110);
 
   initietMenus();
@@ -197,8 +186,6 @@ int checkTheY(){
   int y = analogRead(VRy);
   if(y > maxThreashold){
     if(!joyMoved){
-      //lcdYold = lcdY;
-      //lcdY--;
       joyMoved = true;
       return -1;
     }
@@ -206,8 +193,6 @@ int checkTheY(){
   }
   if(y < minThreashold){
     if(!joyMoved){
-      //lcdYold = lcdY;
-      //lcdY++;
       joyMoved = true;
       return 1;
     }
@@ -240,11 +225,6 @@ void menuNavigation(){
     MenuState = mainMenu->topRow + mainMenu->cursorPos + 1;
     lcd.clear();
   }
-//  if(millis() - prevDisplayTime > displayInterval){
-//    printCursor('>');
-//    //printRows();
-//    prevDisplayTime = millis();
-//  }
 }
 
 //for game
@@ -271,7 +251,6 @@ unsigned write_score(int score, int bonusPoints){
 }
 
 void end_game(){
-    //lcd.clear();
     lcd.setCursor(0,0);
     lcd.print("___Well Done!___");
     lcd.setCursor(0,1);
@@ -294,7 +273,6 @@ void feed_Joe();
 void the_game(){
   //end of the game
   
-  //theScore = 3*Level;
   lcd.setCursor(0,0);
   lcd.print("lives=");
   lcd.print(lives);
@@ -338,18 +316,6 @@ void the_Settings(){
     lcd.clear();
   }
   
-//  lcd.setCursor(0,0);
-//  lcd.print("Set level & press");
-//  set_level();
-//  if(checkButton()){
-//    //go back to menu
-//    lcd.clear();
-//    printRows(mainMenu);
-//    MenuState = Menu;
-//    inited = 0;
-//    printCursor('>');
-//  }
-  
 }
 
 void print_highScore(){
@@ -377,7 +343,6 @@ void show_info(){
   }
 }
 
-//void loop() {
 void runMenu(){
   // main function for menu
   switch(MenuState){
