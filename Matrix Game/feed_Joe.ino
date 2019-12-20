@@ -15,6 +15,8 @@ unsigned long int prevPressTime = 0, //for the joystick button
 long int prevObs = 0; //last time generated obstacle
 long int prevFall = 0, fallSpeed = 200; //for moving the objects
 
+char reversCtrl = 1;  // revers joystick controls
+
 //points location vector
 struct catchPoints{
   unsigned long int blinkTime;
@@ -133,7 +135,7 @@ void movement(){
   {
     if (movedY == false)
     {
-      changeY = -1;
+      changeY = -1*reversCtrl;
       movedY = true;
     }
   }
@@ -143,7 +145,7 @@ void movement(){
     {
       if (movedY == false)
       {
-        changeY = 1;
+        changeY = 1*reversCtrl;
         movedY = true;
       }
     }
@@ -154,7 +156,7 @@ void movement(){
   {
     if (movedX == false)
     {
-      changeX = -1;
+      changeX = -1*reversCtrl;
       movedX = true;
     }
   }
@@ -164,7 +166,7 @@ void movement(){
     {
       if (movedX == false)
       {
-        changeX = 1;
+        changeX = 1*reversCtrl;
         movedX = true;
       }
     }
@@ -253,6 +255,7 @@ void makeFood(){
       Food[FoodIndex].blinkTime = millis();
       Food[FoodIndex].state = true;
     }
+	//don't make it into an wall
     if(Map[Food[FoodIndex].Y+1] & 1<<(7-Food[FoodIndex].X)){
       Food[FoodIndex].Y = 8;
   }
@@ -324,7 +327,7 @@ void catchFood(){
   }
 }
 
-bool Pause = false, stopTime = false; //only for development
+bool Pause = false;
 
 void pauseGame(){
   if(checkButton()){
@@ -371,5 +374,7 @@ void feed_Joe(){
 void runMenu();
 
 void loop() {
+
   runMenu();
+  
 }

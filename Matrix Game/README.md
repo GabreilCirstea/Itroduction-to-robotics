@@ -19,7 +19,7 @@ applies to exhaustion, more you run faster you will lose energy.
 ### How to play:
 <ul>
 <li> You control Joe, a little dot, using the joystick </li>
-<li> Move to doge the objects that get in your way </li>
+<li> Move to doge the objects that get in your way(these objects are 2 pixels wide) </li>
 <li> Go for the food (the blinking dots) </li>
 <li> Try to keep eating to get more energy, and run a bigger distance</li>
 </ul>

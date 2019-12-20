@@ -11,7 +11,6 @@ const int RS = 7,
 LiquidCrystal lcd(RS,E,D4,D5,D6,D7); //pins
 
 //JoyStick
-
 #define joyMoved movedY
 extern const int VRx, VRy, buttonPin;
 extern bool movedY;
@@ -40,19 +39,19 @@ char mainMenuRows[noOfMainRows][16]={
   "Settings",
   "Info"
 };
-
+//for submenu rows like info
 const int noOfInfo = 4;
 char infoRows[noOfInfo][16]={
   "Feed Joe",
   "Cirstea Gabriel",
-  "GitHub",
+  "bit.do/fmud5",
   "@UnibucRobotics"
 };
 
 char settingsRows[4][16]={
   "Level",
   "Light",
-  "Contrast",
+  "Revers Ctrl",
   "Back"
 };
 struct CurrentMenu{
@@ -101,19 +100,17 @@ void initietMenus(){
 
 enum States{Menu,Game,Score,Settings,Info};
 States MenuState = Menu;
-enum SettingsStates{setMenu,SettingLevel,SettingLight,SettingContrast,Back};
+enum SettingsStates{setMenu,SettingLevel,SettingLight,SettingControl,Back};
 SettingsStates SettingState = setMenu;
 
 
 //game variables
-//extern int theScore;
-//extern int Distance;
 int startingLevelValue = 0, Level = 0;
 int HighScore;
 int scoreAdr = 0; //address of the score in the EEPROM 
 unsigned long int startTime, playingTime = 10000, lastLevIncr = 0;
-//for lcd.clear() and print just once
-int inited = 0;
+//for lcd.clear() and print rows just once
+int initedMenu = 0;
 
 void printCursor(char c,CurrentMenu *menu);
 
@@ -137,7 +134,6 @@ void setupLcd() {
   pinMode(LCDLed,OUTPUT);
   Serial.begin(9600);
   digitalWrite(LCDLed,lcdLedState);
-
   analogWrite(VO,110);
 
   initietMenus();
@@ -187,14 +183,14 @@ int checkTheY(){
   if(y > maxThreashold){
     if(!joyMoved){
       joyMoved = true;
-      return -1;
+      return -1*reversCtrl;
     }
       joyMoved = true;
   }
   if(y < minThreashold){
     if(!joyMoved){
       joyMoved = true;
-      return 1;
+      return 1*reversCtrl;
     }
       joyMoved = true;
   }
@@ -234,7 +230,7 @@ void game_init(){
   Level = startingLevelValue;
   startTime = millis();
   lastLevIncr = millis();
-  inited = 1;
+  initedMenu = 1;
   gameSetup();  //game setup for matrix
   lcd.clear();
 }
@@ -259,7 +255,7 @@ void end_game(){
     lcd.print("    ");
     if(checkButton()){
       MenuState = Menu;
-      inited = 0;     /* to clear the screen */
+      initedMenu = 0;     /* to clear the screen */
       lcd.clear();
       printRows(mainMenu);
       printCursor('>',mainMenu);
@@ -296,13 +292,13 @@ void set_level(){
   lcd.setCursor(0,1);
   lcd.print("Level: ");
   lcd.print(diffStr[startingLevelValue]);
-  lcd.print("   ");
+  lcd.print("     ");
   if(checkButton()){
     //go back to menu
     lcd.clear();
     printRows(settingsMenu);
     SettingState = setMenu;
-    inited = 0;   /* to clear the screen after this */
+    initedMenu = 0;   /* to clear the screen after this */
     printCursor('>',settingsMenu);
   }
 }
@@ -315,7 +311,6 @@ void the_Settings(){
     SettingState = settingsMenu->topRow + settingsMenu->cursorPos + 1;
     lcd.clear();
   }
-  
 }
 
 void print_highScore(){
@@ -327,7 +322,7 @@ void print_highScore(){
   lcd.setCursor(0,1);
   lcd.print("back - press");
   if(checkButton()){
-    inited = 0;
+    initedMenu = 0;
     lcd.clear();
     printRows(mainMenu);
     MenuState = Menu;
@@ -351,7 +346,7 @@ void runMenu(){
         break;
     case Game:
       {
-        if(!inited)
+        if(!initedMenu)
           game_init();  //init for Lcd
         if(!gameIsOver)
           the_game();
@@ -363,19 +358,20 @@ void runMenu(){
       break;
      case Score:
      {
-      if(!inited){
+      if(!initedMenu){
         lcd.clear();
-        inited = 1;
+        initedMenu = 1;
       }
       print_highScore();
      }
       break;
      case Settings:
       {
-        if(!inited){
+        if(!initedMenu){
           //fist time clear the screen
           lcd.clear();
-          inited = 1;
+          initedMenu = 1;
+          printCursor('>',settingsMenu);
         }
         switch(SettingState){
           case setMenu:
@@ -393,6 +389,14 @@ void runMenu(){
             lcdLedState = !lcdLedState;
             digitalWrite(LCDLed,lcdLedState);
             SettingState = setMenu;
+            printCursor('>',settingsMenu);
+            break;
+          }
+          case SettingControl:
+          {
+            reversCtrl*=-1;
+            SettingState = setMenu;
+            printCursor('>',settingsMenu);
             break;
           }
           case Back:
@@ -400,13 +404,17 @@ void runMenu(){
             lcd.clear();
             printRows(mainMenu);
             MenuState = Menu;   //go back to main menu
-            inited = 0;
+            initedMenu = 0;
             printCursor('>',mainMenu);
             SettingState = setMenu;   //come back on the settings later
+            //reset the cursor tu top of the menu
+            settingsMenu->topRow = 0;
+            settingsMenu->cursorPos = 0;
             break;
           }
           default:
             SettingState = setMenu; //stai on the settings
+            printCursor('>',settingsMenu);
             break;
         }
       }
