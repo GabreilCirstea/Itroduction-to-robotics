@@ -37,4 +37,4 @@ Hardware:
 </ul>
 
 ### Final Product
-![Product picture](images/matrix_picture3.jpg = 600x800)
+![Product picture](images/matrix_picture3.jpg =600x800)
