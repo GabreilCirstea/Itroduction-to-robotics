@@ -37,4 +37,4 @@ Hardware:
 </ul>
 
 ### Final Product
-![Product picture](images/matrix_picture3.jpg | width=600)
+<img src="images/matrix_picture3.jpg" width=600, height=800>
