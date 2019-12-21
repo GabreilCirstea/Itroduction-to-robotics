@@ -37,7 +37,7 @@ Hardware:
 </ul>
 
 ### Final Product
-<img src="images/matrix_picture1.jpg" width=400, height=600>
+<img src="images/matrix_picture1.jpg" style="float:left" width=400, height=600>
 <img src="images/matrix_picture2.jpg" width=400, height=600>
 <img src="images/matrix_picture3.jpg" width=400, height=600>
 <img src="images/matrix_picture4.jpg" width=400, height=600>
