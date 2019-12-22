@@ -37,8 +37,8 @@ Hardware:
 </ul>
 
 ### Final Product
-*A short demonstration [video](https://drive.google.com/open?id=1LBkK_bsXSD4eykGUfNPAiHJGiLx4Uikg)* <br>
-*And some pictures:*<br>
+**A short demonstration [video](https://drive.google.com/open?id=1LBkK_bsXSD4eykGUfNPAiHJGiLx4Uikg)** <br>
+**And some pictures:**<br>
 <img src="images/matrix_picture1.jpg" width=400, height=600>
 <img src="images/matrix_picture2.jpg" width=400, height=600>
 <img src="images/matrix_picture3.jpg" width=400, height=600>
