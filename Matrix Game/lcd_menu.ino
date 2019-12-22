@@ -11,6 +11,8 @@ const int RS = 7,
 LiquidCrystal lcd(RS,E,D4,D5,D6,D7); //pins
 
 //JoyStick
+
+//external variables from game file
 #define joyMoved movedY
 extern const int VRx, VRy, buttonPin;
 extern bool movedY;
@@ -20,6 +22,7 @@ extern unsigned long int prevPressTime, pressInterval;
 extern bool gameIsOver;
 extern enum Difficulty Diff;
 extern int lives;
+//difficulty display
 const char diffStr[3][10] ={
   "easy",
   "medium",
@@ -31,7 +34,7 @@ const char diffStr[3][10] ={
 unsigned long int displayInterval = 10, prevDisplayTime = 0;
 char lcdLedState = HIGH;    /* the lcd led */
 
-//for menu
+//lines printed on menu
 const int noOfMainRows = 4;
 char mainMenuRows[noOfMainRows][16]={
   "Start Game",
@@ -39,7 +42,7 @@ char mainMenuRows[noOfMainRows][16]={
   "Settings",
   "Info"
 };
-//for submenu rows like info
+
 const int noOfInfo = 4;
 char infoRows[noOfInfo][16]={
   "Feed Joe",
@@ -54,9 +57,11 @@ char settingsRows[4][16]={
   "Revers Ctrl",
   "Back"
 };
+
+//the structure of menues
 struct CurrentMenu{
   //if there will be a cursor
-  bool cursorCheck;
+  bool cursorCheck;           //some menues(like info), don't have cursor
   int cursorPos,prevCursorPos;
   int topRow;
   int noOfRows;
@@ -65,9 +70,10 @@ struct CurrentMenu{
 CurrentMenu *mainMenu, *infoMenu, *settingsMenu;
 
 void initietMenus(){
+  //o metoda nu prea ortodoxa
   mainMenu = new CurrentMenu;
   mainMenu->topRow = 0;
-  mainMenu->noOfRows = 4;
+  mainMenu->noOfRows = noOfMainRows;
   mainMenu->theRows = new char*[mainMenu->noOfRows];
   for(int i=0;i<mainMenu->noOfRows;i++){
     mainMenu->theRows[i] = mainMenuRows[i];
@@ -98,6 +104,7 @@ void initietMenus(){
   settingsMenu->prevCursorPos = 0;
 }
 
+//enum the Menu entrys and settings menu entrys
 enum States{Menu,Game,Score,Settings,Info};
 States MenuState = Menu;
 enum SettingsStates{setMenu,SettingLevel,SettingLight,SettingControl,Back};
@@ -105,13 +112,21 @@ SettingsStates SettingState = setMenu;
 
 
 //game variables
+//extern int theScore;
+//extern int Distance;
 int startingLevelValue = 0, Level = 0;
-int HighScore;
-int scoreAdr = 0; //address of the score in the EEPROM 
-unsigned long int startTime, playingTime = 10000, lastLevIncr = 0;
-//for lcd.clear() and print rows just once
-int initedMenu = 0;
 
+//HighScore variable
+union unionScore{
+int HighScore;
+unsigned char cScore[4];    //for writing on EEPROM
+} HighScore;
+int scoreAdr = 0; //address of the score in the EEPROM 
+
+//for lcd.clear() and print rows just once
+int initedMenu= 0;
+
+//function for printing the cursor on the sccreen
 void printCursor(char c,CurrentMenu *menu);
 
 void printRows(struct CurrentMenu *menu){
@@ -120,6 +135,19 @@ void printRows(struct CurrentMenu *menu){
   lcd.print(menu->theRows[menu->topRow]);
   lcd.setCursor(1,1);
   lcd.print(menu->theRows[menu->topRow+1]);
+}
+
+void readFromEEPROM(){
+  //load the score from EEPROM
+  for(int i=0;i<4;i++){
+    HighScore.cScore[i] = EEPROM.read(scoreAdr+i);
+  }
+}
+void writeOnEEPROM(){
+  //wirte score on EEPROM
+  for(int i=0;i<4;i++){
+    EEPROM.write(scoreAdr+i, HighScore.cScore[i]);
+  }
 }
 
 void setupLcd() {
@@ -134,13 +162,12 @@ void setupLcd() {
   pinMode(LCDLed,OUTPUT);
   Serial.begin(9600);
   digitalWrite(LCDLed,lcdLedState);
-  analogWrite(VO,110);
 
   initietMenus();
   printRows(mainMenu);
   printCursor('>',mainMenu);
   //load the highScore
-  HighScore = EEPROM.read(scoreAdr);
+  readFromEEPROM();
 }
 
 void update_topRow(CurrentMenu *menu, int change){
@@ -179,6 +206,8 @@ void updateY(int val,CurrentMenu *menu){
 }
 
 int checkTheY(){
+  //read the imput from the joystick
+  //return 0 if nothing, 1/-1 for up/down
   int y = analogRead(VRy);
   if(y > maxThreashold){
     if(!joyMoved){
@@ -215,7 +244,7 @@ int checkButton(){
 }
 
 void menuNavigation(){
-//the menu
+  //the menu
   updateY(checkTheY(),mainMenu);
   if(checkButton()){
     MenuState = mainMenu->topRow + mainMenu->cursorPos + 1;
@@ -225,12 +254,9 @@ void menuNavigation(){
 
 //for game
 void game_init(){
-  lives = 3;
   theScore = 0;
   Level = startingLevelValue;
-  startTime = millis();
-  lastLevIncr = millis();
-  initedMenu = 1;
+  initedMenu= 1;
   gameSetup();  //game setup for matrix
   lcd.clear();
 }
@@ -238,10 +264,10 @@ void game_init(){
 unsigned write_score(int score, int bonusPoints){
   //calculate and set the final score
   int finalScore = score + bonusPoints;
-  if(finalScore > HighScore){
-    HighScore = finalScore;
+  if(finalScore > HighScore.HighScore){
+    HighScore.HighScore = finalScore;
     //save the score
-    EEPROM.write(scoreAdr, HighScore);
+    writeOnEEPROM();
   }
   return finalScore;
 }
@@ -255,7 +281,7 @@ void end_game(){
     lcd.print("    ");
     if(checkButton()){
       MenuState = Menu;
-      initedMenu = 0;     /* to clear the screen */
+      initedMenu= 0;     /* to clear the screen */
       lcd.clear();
       printRows(mainMenu);
       printCursor('>',mainMenu);
@@ -298,7 +324,7 @@ void set_level(){
     lcd.clear();
     printRows(settingsMenu);
     SettingState = setMenu;
-    initedMenu = 0;   /* to clear the screen after this */
+    initedMenu= 0;   /* to clear the screen after this */
     printCursor('>',settingsMenu);
   }
 }
@@ -317,12 +343,12 @@ void print_highScore(){
   //display the highest score on LCD
   lcd.setCursor(0,0);
   lcd.print("The BEST:");
-  HighScore = EEPROM.read(scoreAdr);
-  lcd.print(HighScore);
+  readFromEEPROM();
+  lcd.print(HighScore.HighScore);
   lcd.setCursor(0,1);
   lcd.print("back - press");
   if(checkButton()){
-    initedMenu = 0;
+    initedMenu= 0;
     lcd.clear();
     printRows(mainMenu);
     MenuState = Menu;
@@ -360,7 +386,7 @@ void runMenu(){
      {
       if(!initedMenu){
         lcd.clear();
-        initedMenu = 1;
+        initedMenu= 1;
       }
       print_highScore();
      }
@@ -370,7 +396,7 @@ void runMenu(){
         if(!initedMenu){
           //fist time clear the screen
           lcd.clear();
-          initedMenu = 1;
+          initedMenu= 1;
           printCursor('>',settingsMenu);
         }
         switch(SettingState){
@@ -404,7 +430,7 @@ void runMenu(){
             lcd.clear();
             printRows(mainMenu);
             MenuState = Menu;   //go back to main menu
-            initedMenu = 0;
+            initedMenu= 0;
             printCursor('>',mainMenu);
             SettingState = setMenu;   //come back on the settings later
             //reset the cursor tu top of the menu

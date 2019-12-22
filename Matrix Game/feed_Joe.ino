@@ -28,8 +28,8 @@ int FoodLen = 0, FoodInterval = 0,FoodIndex = 0;
 unsigned long int lastFood = 0;
 float foodMultiplier;     //catching more food give you more energy
 int  theScore, Distance, Energy;
-bool ghostMode = 0; //after hitting a wall
-int ghostStart = 0; //where the player hit the wall
+bool ghostMode = 0; 		//after hitting a wall
+int ghostStart = 0; 		//where the player hit the wall
 bool playerBlinkState = true;  //while ghost, player will blink
 unsigned long prevGhostBlink = 0;
 
@@ -38,33 +38,22 @@ bool gameIsOver = false;
 int lives = 0;
 bool MapPrinted = 0;  //Print the map for the fist time
 
-byte startMap[9]={
-  B00000000,
-  B01111100,
-  B01000100,
-  B01111100,
-  B00010000,
-  B00010000,
-  B00101000,
-  B01000100,
-  B00000000
-};
 byte Map[9]={
   B00000000,
-  B01111100,
-  B01000100,
-  B01111100,
-  B00010000,
-  B00010000,
-  B00101000,
-  B01000100,
+  B00000000,
+  B00000000,
+  B00000000,
+  B00000000,
+  B00000000,
+  B00000000,
+  B00000000,
   B00000000
 };
 
 //initiet the game variables
 void gameSetup(){
-  posX = 7;
-  posY = 7;
+  posX = 3;
+  posY = 6;
   prevX = posX;
   prevY = posY;
   //lifes
@@ -84,7 +73,7 @@ void gameSetup(){
   Energy = 50;
   //the map
   for(int i=0;i<9;i++){
-    Map[i] = startMap[i];
+    Map[i] = B00000000;
   }
   fallSpeed = 100*(2+Diff);
   prevObs = millis();
@@ -92,7 +81,6 @@ void gameSetup(){
 }
 
 void setup() {
-  // put your setup code here, to run once:
   pinMode(buttonPin,INPUT_PULLUP);
 
   //the lcd display
@@ -135,6 +123,7 @@ void movement(){
   {
     if (movedY == false)
     {
+      //posY--;
       changeY = -1*reversCtrl;
       movedY = true;
     }
@@ -145,6 +134,7 @@ void movement(){
     {
       if (movedY == false)
       {
+        //posY++;
         changeY = 1*reversCtrl;
         movedY = true;
       }
@@ -156,6 +146,7 @@ void movement(){
   {
     if (movedX == false)
     {
+      //posX--;
       changeX = -1*reversCtrl;
       movedX = true;
     }
@@ -166,6 +157,7 @@ void movement(){
     {
       if (movedX == false)
       {
+        //posX++;
         changeX = 1*reversCtrl;
         movedX = true;
       }
@@ -255,7 +247,6 @@ void makeFood(){
       Food[FoodIndex].blinkTime = millis();
       Food[FoodIndex].state = true;
     }
-	//don't make it into an wall
     if(Map[Food[FoodIndex].Y+1] & 1<<(7-Food[FoodIndex].X)){
       Food[FoodIndex].Y = 8;
   }
@@ -327,7 +318,7 @@ void catchFood(){
   }
 }
 
-bool Pause = false;
+bool Pause = false, stopTime = false; //only for development
 
 void pauseGame(){
   if(checkButton()){
@@ -374,7 +365,5 @@ void feed_Joe(){
 void runMenu();
 
 void loop() {
-
   runMenu();
-  
 }
