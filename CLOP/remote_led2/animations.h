@@ -6,6 +6,7 @@
 void setColor(int red, int green, int blue);
 extern unsigned int brightness;
 void applyBrightness(unsigned int brightness);
+void moveAround();      //for the special animation
 
 //double lastTimeAnim = 0, intervAnim;
 //int animIndex = 0;
@@ -158,7 +159,7 @@ void initSmoothAnim(double timeInterv){
   animStep.animIndex = 0;
   setAnimColor(animColors[animStep.animIndex]);
 }
-void change();
+
 int continueAnimation(){
   switch(RunningNow){
     case FLASH:{
@@ -179,7 +180,7 @@ int continueAnimation(){
     break;
     case SMOOTH:{
       //playSmooth(animStep);
-      change();
+      moveAround();
       return 1;
     }
     break;

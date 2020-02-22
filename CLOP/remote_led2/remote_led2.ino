@@ -6,20 +6,22 @@
 #define GREEN 0,255,0
 #define BLUE 0,0,255
 #define animINTERV 1000   //an animation interval
-#define MAX_BRIGHT 90
+#define MAX_BRIGHT 90     //maximum brighness
 //number of pins
-#define LED_NUM 25
-#define LED_STRIPS 2
+#define LED_NUM 26        //the number of leds per strip
+#define LED_STRIPS 2      //the number of leds strips
 #define LED_BOTTOM 10
 #define LED_LEFT 9
+
+//the leds strips as a matrix
 CRGB leds[LED_STRIPS][LED_NUM];
 
 const int receiverPin = 11;
 struct RGBColor{
   int r,g,b;
 }LastColor, CurrentColor; // last color befor the turn off
-unsigned int brightness = 10;  //not used
-//turn off and on
+unsigned int brightness = 5;  //the brightness
+//turn off and on the LEDs
 bool Running = 1;
 
 IRrecv irrecv(receiverPin);
@@ -30,8 +32,9 @@ void setColor(int red,int green, int blue);
 void setup(){
   Serial.begin(9600);
   irrecv.enableIRIn();
-  irrecv.blink13(true);
+  irrecv.blink13(true);     //when receveing signal, blink build in led
 
+  //init the LEDs
   FastLED.addLeds<WS2812,LED_BOTTOM,GRB>(leds[0],LED_NUM);
   FastLED.addLeds<WS2812,LED_LEFT,GRB>(leds[1],LED_NUM);
   FastLED.setBrightness(brightness);
@@ -43,14 +46,14 @@ void setup(){
   Running = 0;
 }
 void applyBrightness(unsigned int bright){
-  //not working
+  //change the brightness of the LEDs
   FastLED.setBrightness(bright);
   FastLED.show();
 }
 
 void setColor(int red, int green, int blue){
   //output the color
-  if(!Running) return;  //if tuned off - exit
+  if(!Running) return;      //if tuned off -> exit
   CurrentColor = {red,green,blue};
   for(int j=0;j<LED_STRIPS;j++)
     for(int i=0;i<LED_NUM;i++){
@@ -64,6 +67,7 @@ void clrcpy(RGBColor src, RGBColor &dst){
   dst.g = src.g;
   dst.b = src.b;
 }
+// a special animation
 #define FSTEP 10
 void fadeTo(CRGB src, CRGB& dst){
   //fade from src to dst
@@ -78,7 +82,7 @@ void fadeTo(CRGB src, CRGB& dst){
     }
   }
 }
-void initLedStrip(){
+void initLedStrip(){      //spread the colors to the LED strip
   RunningNow = SMOOTH;
   int indexColor = 0;
   for(int j=0;j<LED_STRIPS;j++)
@@ -93,19 +97,21 @@ void initLedStrip(){
   }
   FastLED.show();
 }
-void change(){
+void moveAround(){
   //move leds around
   EVERY_N_MILLISECONDS(100){
+    CRGB aux = leds[0][0];
     for(int j=0;j<LED_STRIPS;j++){
-      CRGB aux = leds[j][0];
+      
       for(int i=0;i<LED_NUM;i++){
-        leds[j][i] = leds[j][(i+1)%LED_NUM];
+        leds[j+(i/(LED_NUM))][i] = leds[j][(i+1)%LED_NUM];
         //fadeTo(leds[(i+1)%NUM],leds[i]);
       }
-      leds[j][LED_NUM-1] = aux;
+      
       //fadeTo(aux,leds[NUM-1]);
       FastLED.show();
     }//for j
+    leds[LED_STRIPS-1][LED_NUM-1] = aux;
   }
 } //change
 
@@ -114,8 +120,8 @@ void chekRmote(){
   Serial.println(results.value, HEX);
   switch(results.value){
     case 0xF700FF:{
-      Serial.print("UP ");
-      Serial.println(brightness);
+      //Serial.print("UP ");
+      //Serial.println(brightness);
       brightness+=10;
       if(brightness > MAX_BRIGHT)
         brightness = MAX_BRIGHT;
@@ -123,7 +129,7 @@ void chekRmote(){
     }
       break;
     case 0xF7807F:{
-      Serial.println("DOWN");
+      //Serial.println("DOWN");
       brightness-=10;
       if(brightness < 0)
         brightness = 0;
@@ -131,7 +137,7 @@ void chekRmote(){
     }
       break;
     case 0xF740BF:{
-      Serial.println("OFF");
+      //Serial.println("OFF");
       if(Running){
         clrcpy(CurrentColor,LastColor);
         setColor(0,0,0);
@@ -140,7 +146,7 @@ void chekRmote(){
     }
       break;
     case 0xF7C03F:{
-      Serial.println("ON");
+      //Serial.println("ON");
       if(!Running){
         Running = true;
         if(!continueAnimation())
@@ -149,25 +155,25 @@ void chekRmote(){
     }
       break;
     case 0xF720DF:{
-      Serial.println("Red");
+      //Serial.println("Red");
       stopAnimation();
       setColor(RED);
     }
     break;
     case 0xF7A05F:{
-    Serial.println("Green");
+    //Serial.println("Green");
     stopAnimation();
     setColor(GREEN);
     }
     break;
     case 0xF7609F:{
-    Serial.println("Bleu");
+    //Serial.println("Bleu");
     stopAnimation();
     setColor(BLUE);
     }
     break;
     case 0xF7E01F:{
-    Serial.println("White");
+    //Serial.println("White");
     stopAnimation();
     setColor(255,255,255);
     }
@@ -236,29 +242,29 @@ void chekRmote(){
     break;
     
     case 0xF7D02F:{
-    Serial.println("FLASH");
+    //Serial.println("FLASH");
     initFlashAnim(animINTERV);
     }
     break;
     case 0xF7F00F:{
-    Serial.println("STROBE");
+    //Serial.println("STROBE");
     initStrobeAnim();
     }
     break;
     case 0xF7C837:{
-    Serial.println("FADE");
+    //Serial.println("FADE");
     initFadeAnim(animINTERV);
     }
     break;
     case 0xF7E817:{
-    Serial.println("SMOOTH");
+    //Serial.println("SMOOTH");
     //initSmoothAnim(animINTERV);
     initLedStrip();
     }
     break;
     
     default:
-    Serial.println("?");
+    //Serial.println("?");
     break;
   }
   irrecv.resume();
